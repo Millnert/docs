@@ -5,6 +5,7 @@ pipeline {
   }
   stages {
     stage('build') {
+      when { branch 'ci' }
       steps {
         sh '''ls -al ${WORKSPACE}
 docker run --rm -v ${WORKSPACE}:/docs squidfunk/mkdocs-material build
@@ -26,6 +27,7 @@ docker build -t registry.example.safespring.com/safespring/docs:$tag .
       }
     }
     stage('test') {
+      when { branch 'ci' }
       steps {
         sh '''docker run --rm --name safespring-docs -d -p 8580:80 registry.example.safespring.com/safespring/docs:$tag
 curl localhost:8580 > /dev/null
@@ -38,6 +40,7 @@ docker stop safespring-docs'''
       }
     }
     stage('push') {
+      when { branch 'ci' }
       steps {
         sh 'docker push registry.example.safespring.com/safespring/docs:$tag'
       }
@@ -48,6 +51,7 @@ docker stop safespring-docs'''
       }
     }
     stage('k8s-deploy') {
+      when { branch 'ci' }
       steps {
         sh 'sed -i "s/%%TAG%%/$tag/g" k8s.yaml'
         sh 'kubectl apply -f k8s.yaml'
